@@ -1456,4 +1456,13 @@ log4j.configuration=file:log4j.properties</code></blockquote>
         <Core>false</Core>
         <Type>String</Type>
     </PropertyDefinition>
+     <PropertyDefinition>
+        <Name>UseReadTupleSqlQueries</Name>
+        <Path>mondrian.rolap.UseReadTupleSqlQueries</Path>
+        <Description>
+                use read tuple queries
+        </Description>
+        <Type>boolean</Type>
+        <Default>true</Default>
+    </PropertyDefinition>
 </PropertyDefinitions>

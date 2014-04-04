@@ -13,6 +13,7 @@ package mondrian.rolap;
 
 import mondrian.calc.ResultStyle;
 import mondrian.calc.TupleList;
+import mondrian.calc.impl.ListTupleList;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
@@ -194,6 +195,51 @@ public abstract class RolapNativeSet extends RolapNative {
         }
 
         protected TupleList executeList(final SqlTupleReader tr) {
+	    
+	    boolean descendantQuery = false;
+	    List<List<RolapMember>> TempResult = new ArrayList<List<RolapMember>>();
+
+	    //System.out.println("useReadTuples = " + MondrianProperties.instance().UseReadTupleSqlQueries.get());
+	    if(!MondrianProperties.instance().UseReadTupleSqlQueries.get()){
+		    for (CrossJoinArg arg : args) {
+			    if(arg instanceof DescendantsCrossJoinArg)
+				    descendantQuery = true;
+			    List<RolapMember> resultRow = new ArrayList<RolapMember>();
+			    List<List<RolapMember>> TempResult1 = new ArrayList<List<RolapMember>>();
+
+			    if(arg!=null && arg.getMembers()!=null && arg.getMembers().size() > 0){
+				    for(int i=0;i<arg.getMembers().size();i++){
+					    if(TempResult.size() > 0){
+
+						    for(int j=0; j< TempResult.size();j++){
+							    resultRow = new ArrayList<RolapMember>(TempResult.get(j));
+							    resultRow.add(arg.getMembers().get(i));
+							    TempResult1.add(resultRow);
+						    }
+					    }else{
+						    resultRow = new ArrayList<RolapMember>();
+						    resultRow.add(arg.getMembers().get(i));
+						    TempResult1.add(resultRow);
+					    }
+				    }
+				    TempResult =  new ArrayList<List<RolapMember>>(TempResult1);
+			    }
+		    }
+		    List<Member> members = new ArrayList<Member>();
+		    for(int i=0;i<TempResult.size(); i++){
+			    for(int j=0; j<TempResult.get(i).size();j++)
+				    members.add(TempResult.get(i).get(j));
+		    }
+
+		    if(members.size() > 0){
+			    TupleList  resultModified = new ListTupleList(args.length, members);
+			    if(!descendantQuery && resultModified!=null){
+				    //System.out.println("returning resultModified:" + resultModified.toString());
+				    return resultModified;
+			    }
+		    }
+	    }
+	    
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {
                 addLevel(tr, arg);

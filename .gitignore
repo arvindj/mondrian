@@ -1,10 +1,11 @@
+.gitignore
+.classpath
 testclasses
 testlib
 build
 dev-lib
 dist
 doc/api
-
 *.jar
 *.log
 *.log.*
